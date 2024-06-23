@@ -84,7 +84,7 @@ a. Make a time-sequence plot for the data. Are there any obvious time trends? Wh
 We are not able to observe any obvious time trend from time-sequence plot. There exist a noticeable number of sudden upwards or downwards spikes. The area between 40^th day and 60^th day appears to be somewhat steady but we see instantaneous jumping ups and down for other times. Obtaining trends without having that much significant change in purities would be given as an example for early detection of any such time trend. If we were able to detect such trend earlier, we took precautions. For example, if oxygen concentrator filters oxygen at a lower purity level, then it means that the filters need to be cleaned.
 
 ```{r,echo=FALSE}
-oxygen <- read.csv("/Users/kdadash/Documents/Only Necessary Classes/Classes PhD/8. Statistics for Engineer/WEEK1. Descriptive Statistics/HW1/oxygen.csv")
+oxygen <- read.csv("/oxygen.csv")
 ```
 ```{r}
 ts.plot(oxygen$purity, type = "o",col="blue",
