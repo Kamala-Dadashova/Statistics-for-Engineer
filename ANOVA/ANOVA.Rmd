@@ -12,7 +12,6 @@ output:
 after the application of five different types of growth hormone.
 `
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp10_18 <- read.csv("ex10-18.csv")
 attach(exp10_18)
 ```
@@ -68,7 +67,6 @@ data for this study follows. State and test the relevant hypotheses at significa
 We firstly check diognastic test and see assumptions hold.
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp10_37 <- read.csv("ex10-37.csv")
 attach(exp10_37)
 ```
@@ -120,7 +118,6 @@ $$H_{0B}: \beta_{j}=0 \quad  \forall i=1,..J \quad H_{aB}: \exists \beta_{j}\neq
 Let Subject be our A factor and temperature B factor. We create ANOVA table below. Then, we plot a residual diagnostics. We see that residuals have
 relatively constant spread across treatment levels and Q-Q plot shows normally distribution representation. 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp11_08 <- read.csv("ex11-08.csv")
 attach(exp11_08 )
 ```
@@ -174,7 +171,6 @@ It can be concluded that the residuals are normally distributed. From the second
 a) Construct a comparative boxplot of the data on the four different treatments and comment. 
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp11_20 <- read.csv("ex11-20.csv")
 attach(exp11_20)
 boxplot(strength~treatment,col="light blue",xlab="Brand",ylab="color change")
@@ -275,7 +271,6 @@ $$H_{0B}: \beta_{j}=0 \quad  \forall j=1,..J \quad H_{aB}: \exists \beta_{j}\neq
 $$H_{0AB}: \gamma_{ij}=0 \quad  \forall i,j, \quad H_{aAB}: \exists \gamma_{jj}\neq 0$$
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp11_22 <- read.csv("ex11-22.csv")
 attach(exp11_22)
 ```
@@ -322,7 +317,6 @@ $$H_{0B}: \beta_{j}=0 \quad  \forall j=1,..J \quad H_{aB}: \exists \beta_{j}\neq
 $$H_{0AB}: \gamma_{ij}=0 \quad  \forall i,j, \quad H_{aAB}: \exists \gamma_{jj}\neq 0$$
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
 exp11_56 <- read.csv("ex11-56.csv")
 attach(exp11_56)
 
