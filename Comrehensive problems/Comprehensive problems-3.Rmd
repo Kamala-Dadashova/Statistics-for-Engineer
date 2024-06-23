@@ -1,0 +1,553 @@
+---
+title: 
+author: "Kamala Dadashova"
+date: 
+output: pdf_document
+---
+
+\textbf{Problem 1:} Find the missing values in the following ANOVA table.
+
+\textbf{Solution:} In this problem, 
+
+ 1) we are given $$MSA=50, \quad df_A=1$$.  Using class note, $$MSA=\frac{SSA}{df_A}$$ where $df_A=I-1$, we find that $$SSA=50\times 1=50.$$ 
+ 
+2) we have $$SSA=50, \quad SSB=80, \quad SSAB=30, \quad SST=172.$$ Using the identity, $SST=SSA+SSB+SSAB+SSE$, we find that $SSE=172-50-80-30=12$.
+
+3) we have given $$df_A=I-1=1, \quad df_{AB}=(I-1)(J-1)=2$$ implies that $df_{B}=J-1=2$. 
+
+4) we know that $df_A=I-1$, $df_B=J-1$, $df_{AB}=(I-1)(J-1)$, $df_E=IJ(K-1)$. 
+If we add them $df_A+df_B+df_{AB}+df_E=I-1+J-1+IJ-I-J+1+IJK-IJ=IJK-1=df_T$. Using this identity, we find that $df_E=17-1-2-2=12$. 
+
+5) using $MSB=\frac{SSB}{df_B}=80/2=40$, $MSAB=\frac{SSAB}{df_{AB}}=30/2=15$, 
+$MSE=\frac{SSE}{df_E}=12/12=1$. 
+
+6) using class note $F_A=\frac{MSA}{MSE}=50/1=50$, $F_B=\frac{MSB}{MSE}=40/1=40$
+and $F_{AB}=\frac{MSAB}{MSE}=15/1=15$. 
+
+The final table is :
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+Source & SS  & df & MS & F  \\ \hline
+A      & 50  & 1  & 50 & 50 \\ \hline
+B      & 80  & 2  & 40 & 40 \\ \hline
+AB     & 30  & 2  & 15 & 15 \\ \hline
+ERROR  & 12  & 12 & 1  &    \\ \hline
+TOTAL  & 172 & 17 &    &    \\ \hline
+\end{tabular}
+\caption{Anova Table}
+\label{tab:my-table}
+\end{table}
+
+\textbf{Problem 2:} Researchers investigated the effects of cyclic loading and environmental conditions on fatigue crack growth at 22 MPa stress for a particular material. The crack growth rate was recorded for three loading frequencies (10, 1, and 0.1 Hz) in three different environments (Air, Water, and Salt Water). The data from the experiment is provided in growth.csv
+
+a) Fit an ANOVA model using Growth as the response and Environment and Frequency as fixed main effects; ignore the interaction.
+
+\textbf{Solution:} We have fixed effects model, $$X_{ij}=\mu+\alpha_i+\beta_j+\varepsilon_{ij}, \quad 1\leq i\leq I, \quad 1\leq j\leq J$$ where we want $\varepsilon_{ij}\sim \mathcal{N}(0,\sigma^2)$. Our hypotheses are: 
+$$H_{0A}: \alpha_1=\alpha_2=\alpha_3=0, \quad H_{aA}: \mbox{at least one of the $\alpha_i$ s is different than 0.} $$
+$$H_{0B}: \beta_1=\beta_2=\beta_3=0, \quad H_{aB}: \mbox{at least one of the $\beta_j$ s is different than 0.} $$
+
+where A represents environment factor and B represents frequency factor. We firstly call the excel file $\bf{growth.csv}$ and then fit an Anova model using Growth as the response and Environment and Frequency as fixed main effects.
+
+```{r}
+ex2=read.csv("growth.csv")
+fit <- aov(Growth~as.factor(Frequency)+as.factor(Environment),data=`ex2`)
+```
+
+b) Plot the residual diagnostics and identify issues with the residual plots if any.
+
+\textbf{Solution:}
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit,1:2,pch=19) 
+hist(fit$residuals)
+```
+
+We observe that model residuals demonstrate a nonlinear relationship with fitted values, thus perhaps adding interaction term could improve fitting. Regarding QQ plot, we see some major deviations from normality. We also provide a histogram of residuals and it clearly shows that residuals are not normally distributed.
+
+c) Use the model results to display an ANOVA table and coefficient estimates for the fit model. Is there a significant difference in any of the mean values for the different Environments or Frequencies? If so, conduct the appropriate test to determine which means are different.
+
+\textbf{Solution:}
+
+```{r}
+summary(fit)  # ANOVA table
+fit$coefficients  # means
+```
+
+For both environment and frequency, there is a strong evidence (p values, $3.84\times 10^{-8}<0.05$ ,$0.000584<0.05$) that the null hypotheses definded above for all $\alpha_i=0$ and all $\beta_j=0$ is not true and conclude that at least one mean is different than others. At the level 0.05 significance level, all main effects are statistically significant. We would like to know which means are exactly different. To do that we initially provide a comparison box-plot which is followed by applying Tukey's test, 
+
+```{r, warning = FALSE}
+attach(ex2)
+par(mfrow=c(1,2))  # box plot to view difference in means
+boxplot(Growth~Frequency,col="light blue",xlab="Frequency",ylab="Growth")
+boxplot(Growth~Environment,col="light blue",xlab="Environment",ylab="Growth")
+```
+
+```{r}
+TukeyHSD(fit,ordered=T)
+```
+
+According to Tukey’s procedure for multiple comparison, we say that there is a significant difference between mean of 0.1 and others, 1,10. Because $p= 0.0000001<0.05$ for the pair 0.1-10 and $p=0.0000027<0.05$ for the pair 0.1-1. Nonetheless, there is no significant difference between the mean of 1 and 10 since $p=0.4148590>0.05$. Regarding the second factor, we say that there is a significant difference between mean of Air and mean of other two elements, Salt H20 and H20, since $p=0.0043294<0.05$ and $p=0.0009288<0.05$. However, there is no significant difference between the means of the H20 and Salt H20 because $p=0.8359677>0.05$.
+
+We can observe the same result by looking at box-plot of both factors. 
+
+d) Repeat part (a), but this time include the interaction.
+
+\textbf{Solution:} Now, we have additional interaction term and our model is
+$$X_{ijk}=\mu+\alpha_i+\beta_j+\gamma_{ij}+\varepsilon_{ijk}, \quad 1\leq i\leq I, \quad 1\leq j\leq J, K>1,$$ where we want $\epsilon_{ijk}\sim \mathcal{N}(0,\sigma^2)$. Our hypotheses are: 
+
+$$H_{0A}: \alpha_1=\alpha_2=\alpha_3=0, \quad H_{aA}: \mbox{at least one of the $\alpha_i$ s is different than 0.} $$
+$$H_{0B}: \beta_1=\beta_2=\beta_3=0, \quad H_{aB}: \mbox{at least one of the $\beta_j$ s is different than 0.} $$
+$$H_{0AB}: \gamma_{11}=...=\gamma_{33}=0, \quad H_{0AB}: \mbox{at least one is not equal to 0.}$$
+Next, we fit an ANOVA model considering interaction. 
+```{r}
+fit <- aov(Growth~as.factor(Frequency)*as.factor(Environment),data=ex2)
+```
+
+e) Plot the residual diagnostics and identify issues with the residual plots if
+any. Based on the diagnostic plots, would you say the model with interaction is better than the one without? Why or why not?
+
+\textbf{Solution:}
+
+```{r}
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+```
+
+In QQ plot, the pattern is sufficiently linear that there should be no concern about lack of normality. The plot of residuals against fitted values shows residuals have relatively constant spread across treatment levels. Assumptions for the error term in model hold. 
+
+We prefer the model involving interaction because the assumption for the error term in the model holds true. However, we do not see the correctness of these assumptions if we ignore interaction term as we saw in part (b). 
+
+f) Use the model results to display an ANOVA table and coefficient estimates for the fit model. Is there a significant interaction? If so, conduct the appropriate test to determine which means are different. Should you include the differences in means for the main effects? Why or why not?
+
+\textbf{Solution:} 
+
+```{r}
+anova(fit)
+fit$coefficients
+```
+Based on ANOVA table, we see that for the p value of both factors Frequency and Environment is $2.2\times 10^{-16}<0.05$, so we should reject the null hypotheses $H_{0A}$ and $H_{0B}$. Regarding interaction, we also see that $p=2.2\times 10^{-16}<0.05$ implying we should reject the null hypothesis $H_{0AB}$. At the level 0.05 significance level, all main and interaction effects are statistically significant. To verify our outcomes for both main effects and interactions, we apply the following tests. 
+
+```{r, warning = FALSE}
+par(mfrow=c(1,2))  # box plot to view difference in means
+boxplot(Growth~Frequency,col="light blue",xlab="Frequency",ylab="Growth")
+boxplot(Growth~Environment,col="light blue",xlab="Environment",ylab="Growth")
+```
+
+```{r, warning = FALSE}
+par(mfrow=c(1,1))  # interaction plot
+with(ex2, (interaction.plot(Frequency, Environment, Growth, type = "b", pch = c(18,24,22),leg.bty = "n", main = "Interaction Plot of Frequency with Environment", xlab = "Frequency",ylab = "Growth")))
+
+```
+
+
+```{r}
+TukeyHSD(fit,ordered=T)
+```
+
+Now, we see that for both main factors, frequency and environment, p values are less than 0.05.Thus, we reject the null hypotheses $H_{0A}, H_{0B}$ and conclude that ALL mean values for the different Environments or Frequencies are different. The box-plot also illustrates it. When it comes to interaction term, we see that while a few of p values are greater than 0.05, the most of them are less than 0.05. Hence, we reject the null hypotheses $H_{0AB}$ and conclude that there is a significant difference between interactions. If there were no interactions between the factors, we would expect all the lines to follow the same general curve. However, in the provided interaction plot in which we also observe that the effect of Air on mean response is constant with 0.1, 1,10, while the pattern for H20 and Salt H20 is very different. Thus, it verifies Tukey's result. If there is a significant interaction, then we should ignore the two sets of hypotheses for the main effects. A significant interaction tells us that the change in the true average response for a level of Factor A depends on the level of Factor B. The effect of simultaneous changes cannot be determined by examining the main effects separately. So, we should include them. 
+
+```{r}
+detach(ex2)
+```
+
+\textbf{Problem 3:} The file weather.csv contains 77 observations of relative humidity (RH) and air temperature in deg C (Temp) collected at a local weather station.
+
+a) Fit a model using RH as the response and Temp as the predictor; plot the
+diagnostics. Identify any issues with the residual plots. From the summary, would you conclude there a significant relationship between RH and Temp (justify your answer using output from the fit summary)?
+
+\textbf{Solution:}
+
+```{r}
+ex3=read.csv("weather.csv")
+attach(ex3)
+fit <- lm(Humidity~ Temperature..C.,ex3)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+cor(Humidity,Temperature..C.)
+```
+
+Residuals have constant variance, but have short tail. Since consequences of short tailed distribution are not serious, will proceed with current model. From the summary, we see that $p=2.2e-16$, so there is a significant linear relationship. We also find correlation coefficients which is equal to -0.9842145, so there is highly negative linear relationship.
+
+b) Identify the estimates for intercept and slope; is there sufficient evidence to conclude they are both different from zero (justify your answer)? Compute 95% confidence intervals for both estimates. How much of the variability in RH can be explained by Temp? What is the interpretation of the slope estimate?
+
+\textbf{Solution:} 
+
+```{r}
+fit$coefficients 
+```
+
+So, estimates for intercept is 1.6693619 and for slope is -0.0395074. From summary table, we see p values for both estimates is $2e-16<0.05$. Thus, we conclude that there is no strong evidence that mean values of estimates are equal to zero. 
+
+```{r}
+confint(fit)
+```
+Since zero is not included in both confidence intervals, $[1.62836307, 1.71036074]$ for intercept and $[-0.04114155,-0.03787324]$, we say there is a sufficient evidence to conclude they are both different from zero. $R^2=0.9687$, so the Temp explains $96.87\%$ of the variation in RH. The relationship is negative because the coefficient estimate is negative. If the temperature increases by 1 degree, we predict the level of the RH will decrease by approximately 0.0395074 units.
+
+c) Create a grid of potential Temp values ranging from 20 to 30 deg C in increments of at most 0.01 deg C and predict values of RH for those values of Temp; also calculate values for the 95% confidence interval and the 95% prediction interval. Plot the predicted values versus Temp. Overlay the confidence and prediction limits using dashed and dotted lines, respectively; also overlay the actual RH values as points. Does the 95% prediction interval seem reasonable?
+
+\textbf{Solution:} 
+
+```{r}
+grid <- data.frame(seq(20, 30, by = 0.01))   
+colnames(grid)="Temperature..C."
+muRh <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$Temperature..C.,Ypred[,1],type="l",lwd=2,xlab="Temperature",
+     ylab="Humidity")
+lines(grid$Temperature..C.,Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$Temperature..C.,Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$Temperature..C.,muRh[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$Temperature..C.,muRh[,3],lty=2, col = "magenta", lwd = 3)
+points(ex3$Temperature..C.,ex3$Humidity,pch=19,col="blue")
+legend("topright",legend=c("fit","95% PI", "95% CI","actual"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n")
+
+```
+
+Since $95\%$ prediction interval shown in plot covers almost all of the actual data and wider than confidence interval, it seems reasonable.
+
+d) Fit a second model to predict Temp from RH. Compare the summary to that of the model you fit in part (a). What elements of the output are the same? Why?
+
+\textbf{Solution:} 
+
+```{r}
+fit <- lm(Temperature..C.~Humidity,ex3)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+cor(Humidity,Temperature..C.)
+detach(ex3)
+```
+
+We observe that $R^2$, F-statistic, p-value, p value for estimates, adjusted $R^2$, degree of freedoms are still same value but other values in summary table is different than the respective ones in summary table in part(a). The reason why they are still same is that the aim of linear regression is to find a linear relationship between Y and X. Hence, $Y=\beta_0+\beta_1 X+\varepsilon$ is equivalent to $X=\alpha_0+\alpha_1 Y+\epsilon =-\frac{\beta_0}{\beta_1}+\frac{1}{\beta_1}Y-\frac{1}{\beta_1}\varepsilon$. 
+
+\textbf{Problem 4:} In this problem, we examine the relationship between the response mpg and the predictor displacement in the auto.csv data set.
+
+a) Fit the model to predict mpg with displacement. Print the fit summary and
+plot the diagnostics. From the summary, is there a significant linear relationship between displacement and mpg? How much of the variation in mpg can be explained by displacement?
+
+\textbf{Solution:}
+
+```{r}
+ex4=read.csv("auto.csv")
+attach(ex4)
+fit <- lm(mpg~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+cor(mpg,displacement)
+
+```
+
+From diagnostics plots, we observe that non-constant variance, heteroscedasticity, and well as a slight right skewness to the residual distribution. P-value is 2.2e-16, so there is a significant linear relationship. $R^2=0.6482$, so the displacement explains $64.82\%$ of the variation in mpg. The relationship is negative because the coefficient estimate is negative; we would expect on average mpg to decrease by 0.06005 units for every 1 unit increase in displacement.
+
+
+b) Create a grid of potential displacement values ranging from 65 to 460 in increments of at most 0.5 and predict values of mpg for those values of displacement; also calculate values for the $95\%$ confidence interval and the  $95\%$ prediction interval. Plot the predicted values versus displacement. Overlay the confidence and prediction limits using dashed and dotted lines, respectively; also overlay the actual mpg values as points.
+
+\textbf{Solution}:
+
+```{r}
+grid <- data.frame(seq(65, 460, by = 0.5))   
+colnames(grid)="displacement"
+muMpg <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$displacement,Ypred[,1],type="l",lwd=2,xlab="displacement",
+     ylab="mpg")
+lines(grid$displacement,Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,muMpg[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$displacement,muMpg[,3],lty=2, col = "magenta", lwd = 3)
+points(ex4$displacement,ex4$mpg,pch=19,col="blue")
+legend("topright",legend=c("fit","95% PI", "95% CI","actual"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n")
+
+
+```
+
+c) From the diagnostics in part (a) you should see some heteroscedasticity and well as a slight right skewness to the residual distribution. Find a good transformation to correct these problems. Try to fit models for several different transformed mpg values until you find one that reasonably corrects the two problems mentioned above. Plot the diagnostics for the fit to the transformed response you select to show that the problems are corrected. From the summary, is there a significant linear relationship between displacement and the transformed mpg? How much of the variation in the transformed mpg can be explained by displacement?
+
+\textbf{Solution}: 
+
+```{r}
+# Box-Cox
+library(MASS)
+par(mfrow=c(1,1))
+box <- boxcox(fit)
+lambda <- box$x[which.max(box$y)]
+lambda
+
+mpg.box <- (mpg^lambda-1)/lambda
+fit <- lm(mpg.box~displacement)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)
+summary(fit)
+```
+
+In order to get rid of two issues, we try different transformations. The first one we tried is Box-Cox transform. We originally have $R^2=0.6482$. Now, we have $R^2=0.7438$, so we observe some improvements. It does a quite good job of resolving the right skew issue with the Q-Q plot; however, didn’t seem to help with the heteroscedasticity in the residuals plot. 
+
+
+```{r}
+fit <- lm(log(mpg)~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+```
+
+Next, we use log transformation. Now, we have $R^2=0.7288$ even if it shows some improvements comparing to original $R^2$, it has less value comparing to Box-Cox transform. It does a quite good job of resolving the right skew issue with the Q-Q plot; however, didn’t seem to help with the heteroscedasticity in the residuals plot. Thus, we need to continue to seek a correct transform.
+
+```{r}
+fit <- lm(sqrt(mpg)~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+```
+Next, we use square root transformation. Now, we have $R^2=0.6944$, it shows a little improvement comparing to two transforms we used above. It does not resolve the right skew issue with the Q-Q plot and didn’t seem to help with the heteroscedasticity in the residuals plot. 
+
+
+```{r}
+fit <- lm(1/mpg~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+```
+
+Next, we use 1/Y (reciprocal) transformation. Now, we have $R^2=0.75$, which demonstrates the best $R^2$ value so far meaning that we have very good improvements. It does not do a good job to resolve the right skew issue with the Q-Q plot; however, it seems to help with resolving the heteroscedasticity in the residuals plot. We still want to continue to check other transforms.
+
+```{r}
+fit <- lm(1/sqrt(mpg)~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+```
+
+Next, we use $1/\sqrt(Y)$ transformation. Now, we have $R^2=0.748$, we see a good improvements comparing to original $R^2$. Th diagnostics plots are very similar to the one $1/Y$ transform generates. However, $R^2=0.75$ of $1/Y$ is greater than this transform's $R^2$.
+
+
+
+
+```{r}
+fit <- lm((1/log(mpg))~ displacement,ex4)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+```
+
+Lastly, we use $1/log(Y)$ transformation. Now, we have $R^2=0.7484$, we see a good improvements comparing to original $R^2$. Th diagnostics plots again are very similar to the one $1/Y$ transform generates. However, $R^2=0.75$ of $1/Y$ is greater than this transform's $R^2$.
+
+Consequently, $1/Y$ transform  didn’t completely remove the issue of right skewed data but of the transforms we tried this came the closest to resolving both the skew and the heteroscedasticity with big $R^2$ value. Thus, we decide to choose this transform for later analysis. We see from this summary that the R-Squared value increased from 0.64 to 0.75, meaning that this fit accounts for $75\%$ of the variation in mpg while the original one only accounted for $64\%$. Since the P-value remained the same there is still significant linear relationship.
+
+d) Predict values of the transformed mpg for the values of displacement in your grid; also calculate values for the $95\%$ confidence interval and the $95\%$ prediction interval. Plot the predicted values versus displacement. Overlay the confidence and prediction limits using dashed and dotted lines, respectively.
+
+```{r}
+fit <- lm(1/mpg~ displacement,ex4)
+grid <- data.frame(seq(65, 460, by = 0.5))   
+colnames(grid)="displacement"
+muMpg <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$displacement,Ypred[,1],type="l",lwd=2,xlab="displacement",
+     ylab="mpg")
+lines(grid$displacement,Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,muMpg[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$displacement,muMpg[,3],lty=2, col = "magenta", lwd = 3)
+points(ex4$displacement,1/ex4$mpg,pch=19,col="blue")
+legend("topleft",legend=c("fit","95% PI", "95% CI","transformed data"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n")
+
+```
+
+e) Perform a reverse transform of the predicted values as well as the confidence and prediction limits to convert them back to mile per gallon. Plot the predicted values of mpg versus displacement values in the grid. Overlay the confidence and prediction limits using dashed and dotted lines respectively; also overlay the actual mpg values as points.
+
+\textbf{Solution:} 
+
+```{r}
+
+grid <- data.frame(seq(65, 460, by = 0.5))   
+colnames(grid)="displacement"
+muMpg <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$displacement,1/Ypred[,1],type="l",lwd=2,xlab="displacement",
+     ylab="mpg")
+lines(grid$displacement,1/Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,1/Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,1/muMpg[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$displacement,1/muMpg[,3],lty=2, col = "magenta", lwd = 3)
+points(ex4$displacement,ex4$mpg,pch=19,col="blue")
+legend("topright",legend=c("fit","95% PI", "95% CI","transformed data"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n")
+
+```
+
+f) Do you prefer the model using mpg as the response or the model using the transformed response? Comment on the reasons for your choice.
+
+\textbf{Solution:}
+
+
+```{r, echo=FALSE}
+
+
+fit <- lm(mpg~ displacement,ex4)
+grid <- data.frame(seq(65, 460, by = 0.5))   
+colnames(grid)="displacement"
+muMpg <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$displacement,Ypred[,1],type="l",lwd=2,xlab="displacement",
+     ylab="mpg")
+lines(grid$displacement,Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,muMpg[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$displacement,muMpg[,3],lty=2, col = "magenta", lwd = 3)
+points(ex4$displacement,ex4$mpg,pch=19,col="blue")
+legend("topright",legend=c("fit","95% PI", "95% CI","actual"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n", title = "Original model")
+fit <- lm(1/mpg~ displacement,ex4)
+grid <- data.frame(seq(65, 460, by = 0.5))   
+colnames(grid)="displacement"
+muMpg <- predict(fit,new=grid,interval="confidence")
+Ypred <- predict(fit,new=grid,interval="prediction")
+plot(grid$displacement,1/Ypred[,1],type="l",lwd=2,xlab="displacement",
+     ylab="mpg")
+lines(grid$displacement,1/Ypred[,2],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,1/Ypred[,3],lty=3, col = "darkgreen", lwd = 3)
+lines(grid$displacement,1/muMpg[,2],lty=2, col="magenta", lwd = 3)
+lines(grid$displacement,1/muMpg[,3],lty=2, col = "magenta", lwd = 3)
+points(ex4$displacement,ex4$mpg,pch=19,col="blue")
+legend("topright",legend=c("fit","95% PI", "95% CI","transformed data"),
+       lwd=c(2,3,3,NA),pch=c(NA,NA,NA, 19),lty=c(1,3,3, NA),
+       col=c("black","darkgreen","magenta","blue"),bty="n", title = "Transformed model")
+detach(ex4)
+```
+
+Fitting the model to a modified data set and then executing an inverse transform on the model tends to result in a better fit line than just running a linear regression on an unbalanced data set. The transformed model appears to be closer to several of the data points at the end that the original model missed. By comparing the R-Squared values from both summaries, we can definitely infer that the transformed model accounts for more of the variance in mpg, with the transformed model accounting for roughly 11 percent more variation than the original model.
+
+\textbf{Problem 5:} In this problem, we evaluate an experiment to understand certain factors within the manufacturing process of a silver powder used in silicon wafer manufacturing. Specifically, we want to know the impact of Stir Rate (in RPM), Ammonium Concentration (in $\%$), and Temperature (in deg C) on the density (in g/cm3) of the powder. The data from the experiment is contained in silver.csv.
+
+a) Analyze these data with a view to which factors and interactions have highly significant effects, and which levels within these factors are different. Report on all steps necessary for a proper ANOVA.
+
+\textbf{Solution:}
+
+Our fixed model has a form of 
+$$X_{ijkl}=\mu+\alpha_i+\beta_j+\delta_k+\gamma_{ij}^{AB}+\gamma_{ik}^{AC}+\gamma_{jk}^{BC}+\gamma_{ij}+\varepsilon_{ijkl}, \quad 1\leq i\leq I, \quad 1\leq j\leq J, \quad 1\leq k\leq K$$
+where we want $\varepsilon\sim \mathcal{N}(0,\sigma^2)$. Consider factor A is ammonium, factor B is stir rate, factor C is temperature, hypotheses are:
+
+$$H_{0A}: \alpha_1=\alpha_2=0, \quad H_{aA}: \mbox{at least one of the $\alpha_i$ s is different than 0.} $$
+
+$$H_{0B}: \beta_1=\beta_2=0, \quad H_{aB}: \mbox{at least one of the $\beta_i$ s is different than 0.} $$
+
+$$H_{0C}: \delta_1=\delta_2=0, \quad H_{aC}: \mbox{at least one of the $\delta_i$ s is different than 0.} $$
+
+$$H_{0AB}: \gamma^{AB}_{11}=...=\gamma^{AB}_{22}=0, \quad H_{0AB}: \mbox{at least one is not equal to 0.}$$
+$$H_{0AC}: \gamma^{AC}_{11}=...=\gamma^{AC}_{22}=0, \quad H_{0AC}: \mbox{at least one is not equal to 0.}$$
+$$H_{0BC}: \gamma^{BC}_{11}=...=\gamma^{BC}_{22}=0, \quad H_{0BC}: \mbox{at least one is not equal to 0.}$$
+ $$H_{0ABC}: \gamma_{111}=...=\gamma_{222}=0, \quad H_{0ABC}: \mbox{at least one is not equal to 0.}$$
+
+
+```{r, warning = FALSE}
+ex5=read.csv("silver.csv")
+attach(ex5)
+fit <- aov(Density~as.factor(Ammonium)* as.factor(Stir_Rate)* as.factor(Temperature),data=ex5)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)
+```
+
+According to diagnostics plot, we say residuals have relatively constant spread across treatment levels, and residuals are close to normally distributed. Thus, assumptions for error term in model hold.
+
+```{r}
+summary(fit)
+fit$coefficients  
+```
+
+Based on ANOVA table,there is strong evidence ($p=2.24e-05<0.05$, $p=6.48e-07<0.05$) that the null hypotheses  for Ammonium and Stir Rate $H_{0A}$ and $H_{0B}$ are not true. So, they have significant effect. However, there is strong evidence ($p=0.817703>0.05$) that the null hypotheses  for temperature $H_{0C}$ is true, so it does not have any significant effect. Regarding interactions, there is strong evidence ($p=0.000123<0.05$, $p=0.008018<0.05$) that the null hypotheses  for interactions AB and BC $H_{0AB}$ and $H_{0BC}$ are not true. So, they have significant effect. Nonetheless, there is strong evidence ($p=0.164210>0.05, p=0.469047>0.05$)that the null hypothesis for interactions AC and ABC,  $H_{0AC}$ and $H_{0ABC}$,  are true. 
+
+```{r, warning = FALSE, message = FALSE}
+# interaction plot
+with(ex5, (interaction.plot(Ammonium, Stir_Rate, Density, type = "b", 
+pch = c(18,24,22), leg.bty = "n", main = "Interaction Plot of Ammonium with Stir_Rate", 
+xlab = "Ammonium",ylab = "Density")))
+
+with(ex5, (interaction.plot(Stir_Rate, Temperature, Density, type = "b", 
+pch = c(18,24,22), leg.bty = "n", main = "Interaction Plot of Stir Rate with Temperature", 
+xlab = "Stir Rate",ylab = "Density")))
+
+
+
+```
+
+```{r}
+par(mfrow=c(1,3))  
+boxplot(Density~Ammonium,data=ex5,col="light blue",xlab="Ammonium",ylab="Density")
+boxplot(Density~Stir_Rate,data=ex5,col="light blue",xlab="Stir_Rate",ylab="Density")
+boxplot(Density~Temperature,data=ex5,col="light blue",xlab="Temperature",ylab="Density")
+
+```
+
+```{r}
+tuk=TukeyHSD(fit)
+tuk[1:4]
+tuk[6]
+```
+
+Based on Tukey's procedure, p value  for Ammonium and Stir_Rate is $2.24e-05<.05$ and $7e-07<0.05$, so we reject the null hypotheses $H_{0A}$ and $H_{0B}$. But, p value for Temperature is $0.8177028>0.05$, so we accept the null hypothesis $H_{0C}$. It can be seen in box plot, too. 
+
+Subsequently, there is a significant difference for interactions for pairs in Ammonium and Stir_Rate, which are 2:150-2:100 ($0.0000021<0.05)$,30:150-2:100 ($0.0244609<0.05)$, 2:150-30:100 ($0.0000011<0.05)$, 30:150-30:100 ($0.0044774<0.05)$,  30:150-2:150 ($0.0000183<0.05)$.  We also see  a significant difference for interactions for pairs in Stir_Rate and Temperature, which are 150:8-100:8 ($0.0000079<0.04$), 150:40-100:8  ($0.0000371<0.04$), 100:40-150:8 ($0.0000478<0.05$), 150:40-100:40 ($0.0003368<0.05$). We also provide interaction plots of Ammonium with Stir_Rate and Stir Rate with Temperature, respectively. A look at the first graph shows that the effect of ammonium is different for Stir rate 100 than it is for Stir rate 150. We observe the same thing in the second interaction plot, which is the effect of stir rate is different for temperature 40 than it is for temperature 8. In short, since we do not have interactions, we do not have same patterns or slopes in both plots. 
+
+
+
+b) Based on the outcome of this experiment, identify specific operating conditions for the process that will maintain a silver power density less than $14 g/cm^3$.
+
+\textbf{Solution:}
+
+
+```{r, warning = FALSE, message = FALSE}
+library(dplyr)
+Ypred <- predict(fit,new = ex5,interval="prediction")
+New_data = cbind(ex5,Ypred)
+filter(New_data, upr<=14)
+```
+
+We observe that specific operating conditions for the process that will maintain a silver power density less than $14 g/cm^3$ happen when Strir Rate has a value of 150, ammonium has a value of 2, temperature has values 8 and 40. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
