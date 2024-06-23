@@ -10,7 +10,6 @@ output: pdf_document
 a) Assuming the absence of three factor interactions (as did the investigators), $SSE=SSABC$ can be used to obtain an estimate of $\sigma^2$. Construct an ANOVA table based on this data.
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK11. Regression/hw11")
 surface <- read.csv("surface.csv")
 # factors
 surface$power <- as.factor(surface$power)
