@@ -19,7 +19,7 @@ value file called mileage.csv. Use this data to do the following in R:
 
 ```{r qqplot}
 
-mileages <- read.csv("~/Desktop/Statistics Learn/ST515-2022/WEEK7/Confidence Intervals-20220301/HW7/mileage.csv")
+mileages <- read.csv("~/mileage.csv")
 mile = mileages$mileage
 n = length(mile)
 qqnorm(mile, pch=19)
@@ -99,7 +99,7 @@ pressure.csv. Use this data to do the following in R:
 
 (a) Make Q-Q plot of the data in the sample. Based on your observations, can we assume this data came from a normal distribution?
 ```{r}
-pressure <- read.csv("~/Desktop/Statistics Learn/ST515-2022/WEEK7/Confidence Intervals-20220301/HW7/pressure.csv")
+pressure <- read.csv("~/pressure.csv")
 pressure = pressure[,1]
 n = length(pressure)
 qqnorm(pressure, pch=19)
