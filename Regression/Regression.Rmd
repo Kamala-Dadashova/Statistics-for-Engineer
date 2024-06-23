@@ -1,0 +1,282 @@
+---
+title: "HW11"
+author: "Kamala Dadashova"
+date: "4/18/2022"
+output: pdf_document
+---
+
+\textbf{Problem 1:} The article “Parametrical Optimization of Laser Surface Alloyed NiTi Shape Memory Alloy with Co and Nb by the Taguchi Method” (J. of Engr. Manuf., 2012: 969–979) described an investigation to see whether the percent by weight of nickel in the alloyed layer is affected by carbon monoxide powder paste thickness (C, at three levels), scanning speed (B, at three levels), and laser power (A, at three levels). One observation was made at each factor-level combination [Note: Thickness column headings were incorrect in the cited article]:
+
+a) Assuming the absence of three factor interactions (as did the investigators), $SSE=SSABC$ can be used to obtain an estimate of $\sigma^2$. Construct an ANOVA table based on this data.
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK11. Regression/hw11")
+surface <- read.csv("surface.csv")
+# factors
+surface$power <- as.factor(surface$power)
+surface$speed<- as.factor(surface$speed)
+surface$thickness <- as.factor(surface$thickness)
+
+# fit model
+fit <- aov(X.weight~ power + speed + thickness + power:speed + power:thickness+ speed:thickness,data=surface)
+summary(fit)  # ANOVA table
+
+```
+
+b) Use the appropriate $F$ ratios to show that none of the two-factor interactions is significant at a $\alpha=0.05$?
+
+```{r}
+falpha.AB <- qf(0.05,4,8,lower.tail=F)
+falpha.AB
+falpha.AC <- qf(0.05,4,8,lower.tail=F)
+falpha.AC
+falpha.BC <- qf(0.05,4,8,lower.tail=F)
+falpha.BC
+
+```
+Since rejection area for AB interaction is $(3.837853,\infty)$ does not cover F value 1.119 also respective P value on Anova table is greater than 0.05, we say 
+AB interaction term is not statistically significant. Since rejection area for AC interaction is $(3.837853,\infty)$ does not cover F value 1.195 also respective P value on Anova table is greater than 0.05, we say 
+AC interaction term is not statistically significant. Since rejection area for BC interaction is $(3.837853,\infty)$ does not cover F value 0.215 also respective P value on Anova table is greater than 0.05, we say 
+BC interaction term is not statistically significant. 
+
+c) Which main effects are significant at a $\alpha=0.05$?
+
+According to the P-values, one can say the factor A=power and C=thickness($0.0417<0.05$,$0.0025<0.05$) main effects are statistically significant at the .05 level while the factor B=speed ($0.4815>0.05$) main effect is not statistically significant.
+
+
+d) Use Tukey’s procedure with a simultaneous confidence level of $95\%$ to identify significant differences between levels of paste thickness.
+
+```{r}
+boxplot(X.weight~thickness,data=surface,col="light blue",xlab="Thickness",ylab="Weight")
+
+TukeyHSD(fit)$thickness
+```
+
+We see that for difference 0.3-0.2 p value 0.206 is bigger than 0.05 so it does not have that much significance. However other two levels p values 0.002080907 and  0.025229515, which both are less than 0.05. They are significant. 
+
+\textbf{Problem 2}: This exercise we will compare simple linear regression models using the Credit data to understand which variables are more important contributors to credit rating.
+
+a) Use the lm() function to perform a simple linear regression with Rating as the response and Income as the predictor. Use the plot() function to examine residuals to ensure we are not violation assumptions for least squares. Use the summary() function to print the results. Comment on the output.
+
+```{r}
+Credit <- read.csv("Credit.csv")
+par(mfrow=c(1,1))
+plot(Credit$Rating,Credit$Income,pch=19,
+     xlab="Income", ylab="Rating")
+cor(Credit$Rating,Credit$Income)
+# fit model      
+fit <- lm(Rating~Income,Credit)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+
+# scatterplot 
+par(mfrow=c(1,1))
+plot(Credit$Income,Credit$Rating,pch=19,
+     xlab="Income", ylab=" Rating")
+abline(fit,lwd=2,col="blue")
+legend("topleft",legend="fit line",lwd=2,col="blue",bty="n")
+
+
+```
+
+Looking at the plots and summary of this fit, we can suppose the data is reliable as the residuals are centered around zero and while the tail ends of the normal plot seem to deviate from the normal line. Looking at the summary there does appear to be a relationship between the predictor and response as the coefficients show us there is a statistically significant positive correlation with a slope of 3.47. We can say this is a strong correlation as the R Squared value is 0.62. 
+
+
+b) Repeat (a) using Age as the predictor.
+
+```{r}
+Credit <- read.csv("Credit.csv")
+par(mfrow=c(1,1))
+plot(Credit$Rating,Credit$Age,pch=19,
+     xlab="Age", ylab="Rating")
+cor(Credit$Rating,Credit$Age)
+# fit model      
+fit <- lm(Rating~Age,Credit)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+
+# scatterplot of Gore vs. Clinton with fit line overlay
+par(mfrow=c(1,1))
+plot(Credit$Age,Credit$Rating,pch=19,
+     xlab="Age", ylab=" Rating")
+abline(fit,lwd=2,col="blue")
+legend("topleft",legend="fit line",lwd=2,col="blue",bty="n")
+
+
+```
+
+The summary tells us this correlation has a slope of 0.925 with a significance level below 0.05. We see that it is a fairly week correlation as the R squared value is only 0.01064. 
+
+c) Repeat (a) using Cards (number of credit cards the individual possesses) as the predictor; be sure to use the as.factor() function so that R treats Cards as a categorical variable.
+```{r}
+Credit <- read.csv("Credit.csv")
+Cards<-as.factor(Credit$Cards)
+par(mfrow=c(1,1))
+plot(Credit$Rating,Credit$Cards,pch=19,
+     xlab="Cards", ylab="Rating")
+cor(Credit$Rating,Credit$Cards)
+# fit model      
+fit <- lm(Rating~as.factor(Cards),Credit)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+
+
+par(mfrow=c(1,1))
+plot(Cards,Credit$Rating,col=Cards,pch=19,xlab="Number of cards")
+
+```
+
+We observe relatively constant variance versus fitted values and Q-Q plot shows reasonable normality. F-statistic is 1.414 and overall model is not significant since p=0.1888 is bigger than 0.05. $\hat{\beta_0}$= 355.137 with p= 2e-16, so predictor is significant at 0.05 level. Conclusion $\hat{\beta_0}\neq 0$. $\hat{\beta_1}= -9.233$,  $\hat{\beta_2}= -2.326$, $\hat{\beta_3}= 12.113$, $\hat{\beta_4}= -25.225$, $\hat{\beta_5}= 39.499,$ $\hat{\beta_7}= -34.137$ , $\hat{\beta_8}= -73.137$ and corresponding p values are all bigger than 0.05 level. So, we cannot conclude either are different from $\beta_{0}$. $\hat{\beta_6}= 224.863$ and its p value $0.00519>0.05$ so it is marginally significant at 0.05 level. 
+
+
+
+
+
+
+
+d) Repeat (a) using Student as the predictor.
+
+```{r}
+Credit <- read.csv("Credit.csv")
+par(mfrow=c(1,1))
+plot(Credit$Rating,as.factor(Credit$Student),pch=19,
+     xlab="Student", ylab="Rating")
+# fit model      
+fit <- lm(Rating~as.factor(Student),Credit)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+summary(fit) # fit summary
+
+
+par(mfrow=c(1,1))
+plot(as.factor(Credit$Student),Credit$Rating,col=as.factor(Credit$Student),pch=19,xlab="Number of cards")
+```
+
+This summary shows us that there is no relationship between the predictor and response. While there is a slope coefficient of -1 along with the P value of 0.97 means, we can disregard it as statistically insignificant. Furthermore, the extremely small R-squared value of 4.11e-06 confirms that there is no correlation.
+
+
+e) Based on this analysis, which of the predictor variables above has the strongest relationship with an individual’s credit rating?
+
+To sum up, according to these summaries, it seems that income is the strongest predictor of credit rating with the highest R squared rating and the most statistically significant coefficients.
+
+
+\textbf{Problem 3:} In this exercise you will create some simulated data and will fit simple linear regression models to it. Make sure to use set.seed(1) prior to starting part (a) to ensure consistent results.
+
+a) Using the rnorm() function, create a vector, x, containing 100 observations drawn from a N(0, 1) distribution. This represents a feature, X.
+
+```{r}
+set.seed(1)
+X=rnorm(100,0,1)
+```
+
+b) Using the rnorm() function, create a vector, eps, containing 100 observations drawn from a N(0, 0.25) distribution i.e. a normal distribution with mean zero and variance 0.25.
+```{r}
+eps=rnorm(100,0,0.25)
+```
+
+c) Using x and eps, generate a vector y according to the model $Y = -1+0.5X + \epsilon$. What is the length of the vector y? What are the values of $\beta_0$ and $\beta_1$ in this linear model?
+
+$\beta_0=-1$ and $\beta_1=0.5$.
+
+```{r}
+Y=-1+0.5*X+eps
+length(Y)
+```
+
+d) Create a scatterplot displaying the relationship between $x$ and $y$. Comment on what you observe.
+
+Correlation number 0.88 is close to 1 and it seems there is a strong positive correlation.
+
+```{r}
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+cor(X,Y)
+```
+
+e) Fit a least squares linear model to predict $y$ using $x$. How do $\hat\beta_0$ and $\hat\beta_1$  compare to $\beta_0$ and $\beta_1?$
+ 
+```{r}
+fit1 <- lm(Y~X)
+par(mfrow=c(1,2))
+plot(fit1,1:2,pch=19)  # residual diagnostics
+summary(fit1)   # fit summary
+```
+ 
+ 
+ We see on the summary table that estimates for $\beta_0$ and   $\beta_1$ are -1.00942  and  0.49973 which are close to true value of $\beta_0=-1$ and   $\beta_1=0.5$.
+ 
+ f) Display the least squares line on the scatterplot obtained in `(d)`. Draw the population regression line on the plot, in a different color. Use the `legend()` command to create an appropriate legend.
+ 
+```{r}
+# scatterplot with fit line
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+abline(fit1,lwd=3,col="blue")
+lines(X,-1+0.5*X,lwd =3, col = "red")
+legend("topleft",legend=c("Least squares line","Population regression line"),lwd=3,col=c("blue", "red"))
+```
+ 
+ 
+ g) Repeat `(a)-(f)` after modifying the data generation process in such a way that there is less noise in the data. The model should remain the same. You can do this by decreasing the variance of the normal distribution used to generate the error term in `(b)`. Describe your results.
+ 
+```{r}
+eps=rnorm(100,0,0.01)
+Y=-1+0.5*X+eps
+length(Y)
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+cor(X,Y)
+fit2 <- lm(Y~X)
+par(mfrow=c(1,2))
+plot(fit2,1:2,pch=19)  # residual diagnostics
+summary(fit2)   # fit summary
+
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+abline(fit2,lwd=3,col="blue")
+lines(X,-1+0.5*X,lwd =3, col = "red")
+legend("topleft",legend=c("Least squares line","Population regression line"),lwd=3,col=c("blue", "red"))
+
+```
+ 
+ 
+ We take smaller variance and observe that least square line and population regression line overlap. It is clear even from the summary table since  $R^2=0.9995$.
+ 
+ h) Repeat `(a)-(f)` after modifying the data generation process in such a way that there is more noise in the data. The model should remain the same. You can do this by increasing the variance of the normal distribution used to generate the error term in `(b)`. Describe your results.
+ 
+ 
+```{r}
+ 
+eps=rnorm(100,0,4)
+Y=-1+0.5*X+eps
+length(Y)
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+cor(X,Y)
+fit3 <- lm(Y~X)
+par(mfrow=c(1,2))
+plot(fit3,1:2,pch=19)  # residual diagnostics
+summary(fit3)   # fit summary
+
+par(mfrow=c(1,1))
+plot(X,Y,pch=19)
+abline(fit3,lwd=3,col="blue")
+lines(X,-1+0.5*X,lwd =3, col = "red")
+legend("topleft",legend=c("Least squares line","Population regression line"),lwd=3,col=c("blue", "red"))
+
+```
+ Now, we observe that that least square line and population regression line do not overlap. It is because we have smaller $R^2=0.9995$ value. 
+ 
+ i) What are the confidence intervals for $\hat\beta_0$ and $\hat\beta_1$ based on the original data set, the noisier data set, and the less noisy data set? Comment on your results.
+ 
+```{r}
+confint(fit1)
+confint(fit2)
+confint(fit3)
+```
+ 
+ This results are consistent since we also expect with the low noise trial have the narrowest confidence interval and the highest noise trial with the widest interval.
+ 

@@ -1,0 +1,363 @@
+---
+title: "HW10"
+author: "Kamala Dadashova"
+date: "4/3/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+\textbf{Problem 1:} Consider the accompanying data on plant growth
+after the application of five different types of growth hormone.
+`
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp10_18 <- read.csv("ex10-18.csv")
+attach(exp10_18)
+```
+
+a) Perform an F test at level $\alpha=0.05$.
+
+We firstly perform diognastic test and see that assumptions hold.
+
+```{r}
+# create ANOVA table -- use R command for ANOVA
+fit <- aov(growth~as.factor(type))
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+anova(fit)
+# compute test statistic
+MSTr <- 4/(5-1)*((mean(growth[type==1])-mean(growth))^2+(mean(growth[type==2])-mean(growth))^2+(mean(growth[type==3])-mean(growth))^2+(mean(growth[type==4])-mean(growth))^2+(mean(growth[type==5])-mean(growth))^2)
+
+MSTr
+MSE <- (var(growth[type==1])+var(growth[type==2])+var(growth[type==3])+var(growth[type==4])+var(growth[type==5]))/5
+
+MSE
+f <- MSTr/MSE
+f
+
+# test hypothesis
+p.value <- pf(f,4,15,lower.tail=F)
+p.value
+f.alpha <- qf(0.95,4,15)
+f.alpha
+
+```
+
+Since p-value $0.0333<0.05$ and rejection region $( 3.055568,\infty)$ does include $3.4855$, we conclude that we reject the null hypothesis that $\mu_1=\mu_2=\mu_3=\mu_4=\mu_5$.
+
+
+
+b) What happens when Tukey’s procedure is applied?
+```{r}
+TukeyHSD(fit,ordered=T)
+# use boxplot to see if means look different
+par(mfrow=c(1,1))
+boxplot(growth~type,col="light blue",xlab="type",ylab="growth")
+detach(exp10_18)
+```
+
+We observe that all confidence intervals for pairs covers mean zero and also al p values are greater than 0.05. It implies that the entire sample means are not significantly different from one another. So, $H_0$ is not rejected at significance level $0.05.$
+
+\textbf{Problem 2:} Numerous factors contribute to the smooth running of an
+electric motor (“Increasing Market Share Through Improved Product and Process Design: An Experimental Approach,” Quality Engineering, 1991: 361–369). In particular, it is desirable to keep motor noise and vibration to a minimum. To study the effect that the brand of bearing has on motor vibration, five different motor bearing brands were examined by installing each type of bearing on different random samples of six motors. The amount of motor vibration (measured in microns) was recorded when each of the 30 motors was running. The
+data for this study follows. State and test the relevant hypotheses at significance level .05, and then carry out a multiple comparisons analysis if appropriate
+
+
+We firstly check diognastic test and see assumptions hold.
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp10_37 <- read.csv("ex10-37.csv")
+attach(exp10_37)
+```
+
+```{r}
+# create ANOVA table -- use R command for ANOVA
+fit <- aov(vibration..microns.~as.factor(Brand))
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+anova(fit)   
+# compute test statistic
+MSTr <- 6/(5-1)*((mean(vibration..microns.[Brand==1])-mean(vibration..microns.))^2+(mean(vibration..microns.[Brand==2])-mean(vibration..microns.))^2+(mean(vibration..microns.[Brand==3])-mean(vibration..microns.))^2+(mean(vibration..microns.[Brand==4])-mean(vibration..microns.))^2+(mean(vibration..microns.[Brand==5])-mean(vibration..microns.))^2)
+
+MSTr
+MSE <- (var(vibration..microns.[Brand==1])+var(vibration..microns.[Brand==2])+var(vibration..microns.[Brand==3])+var(vibration..microns.[Brand==4])+var(vibration..microns.[Brand==5]))/5
+
+MSE
+f <- MSTr/MSE
+f
+
+# test hypothesis
+p.value <- pf(f,4,25,lower.tail=F)
+p.value
+f.alpha <- qf(0.95,4,15)
+f.alpha
+
+
+
+```
+Since $p=0.0001871498<0.05$ and rejection area $(3.055568, \infty)$ includes f value $8.443954$.     We conclude that we reject the null hypothesis that $\mu_1=\mu_2=\mu_3=\mu_4=\mu_5$.
+```{r}
+TukeyHSD(fit,ordered=T)
+par(mfrow=c(1,1))
+boxplot(vibration..microns.~Brand,col="lightblue",xlab="Brand",ylab="vibration..microns.")
+detach(exp10_37)
+```
+
+Here, we see that while confidence intervals for some pairs like $4-5, 2-5, 2-3, 2-1$ does not include mean zero, others does. For those indicated pairs, p values are smaller than $\alpha=0.05$. Thus, one can give conclusion that at least two of the means differ from one another.
+
+\textbf{Problem 3:} The paper “Exercise Thermoregulation and Hyperprolac-tinaemia” (Ergonomics, 2005: 1547–1557) discussed how various aspects of exercise capacity might depend on the temperature of the environment. The accompanying data on body mass loss (kg) after exercising on a
+semi-recumbent cycle ergometer in three different ambient temperatures ($6^{\circ}$, $18^{\circ}$, and $30^{\circ}$) was provided by the paper’s authors.
+
+a) Does temperature affect true average body mass loss? Carry out a test using a significance level of .01 (as did the authors of the cited paper).
+
+
+$$H_{0A}: \alpha_{i}=0 \quad  \forall i=1,..I \quad H_{aA}: \exists \alpha_{i}\neq 0$$
+
+$$H_{0B}: \beta_{j}=0 \quad  \forall i=1,..J \quad H_{aB}: \exists \beta_{j}\neq 0$$
+Let Subject be our A factor and temperature B factor. We create ANOVA table below. Then, we plot a residual diagnostics. We see that residuals have
+relatively constant spread across treatment levels and Q-Q plot shows normally distribution representation. 
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp11_08 <- read.csv("ex11-08.csv")
+attach(exp11_08 )
+```
+```{r}
+fit <- aov(loss..kg.~as.factor(Subject)+as.factor(temperatures))
+summary(fit)  # ANOVA table
+
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+```
+```{r}
+f.alpha <- qf(0.99,2,16)
+f.alpha
+```
+Here, $J=3, I=9$. We calculate $f_{alpha}$=$f_{J-1,(I-1)(J-1)}$ for B factor. The rejection region $(6.226235, \infty)$ does include calculated value of test statistic 8.770. Also, p value , 0.00268is less than 0.01. So, we reject the null hypothesis at $1\%$ level of significance and conclude that there is a significant effect of temperature on body mass loss.
+
+b) Investigate significant differences among the temperatures.
+
+```{r}
+par(mfrow=c(1,1))  # boxplot to view difference in means
+boxplot(loss..kg.~temperatures,col="light blue",xlab="Temperatures",ylab="color change")
+
+```
+```{r}
+Tukey=TukeyHSD(fit,ordered=T)
+Tukey[2]
+```
+
+We observe that pairs hot-cold significantly differs because p value is less than 0.05 and confidence interval does not include 0 for that pair. 
+
+c) The residuals are  $.20, .30, -0.40, 2.07, .30, .00, .03,-0.20, -.14, .13, .23, -.27, -.04, .03, -.27, -.04, .33, -.10, -.33, -.53, .67, .11, -.33, .27, .01, -.13, .24$ Use these as a basis for investigating the plausibility
+of the assumptions that underlie your analysis in (a).
+
+
+```{r}
+res=c(.20, .30, -0.40, -0.07, .30, .00, .03, -0.20, -0.14, .13, .23, -0.27, -0.04, .03, -0.27, -0.04, .33, -0.10, -0.33, -0.53, .67, .11, -0.33, .27, .01, -0.13,.24)
+par(mfrow=c(1,2))
+qqnorm(res)
+qqline(res)
+plot(fit$fitted.values, res)
+abline(h=0)
+detach(exp11_08)
+
+
+```
+
+It can be concluded that the residuals are normally distributed. From the second plot, one can conclude that the assumption of iid holds because the plot does not show any pattern and distributed around zero. Thus, it is plausible to suppose normality and iid.
+
+\textbf{Problem 4:} The article “Fatigue Limits of Enamel Bonds with Moist and Dry Techniques” (Dental Materials, 2009: 1527–1531) described an experiment to investigate the ability of adhesive systems to bond to mineralized tooth structures. The response variable is shear bond strength (MPa), and two different adhesives (Adper Single Bond Plus and OptiBond Solo Plus) were used in combination with two different surface conditions. The accompanying data was supplied by the authors of the article. The first 12 observations came from the SBP-dry treatment, the next 12 from the SBP-moist treatment, the next 12 from the OBP-dry treatment, and the last 12 from the OBP-moist treatment.
+
+a) Construct a comparative boxplot of the data on the four different treatments and comment. 
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp11_20 <- read.csv("ex11-20.csv")
+attach(exp11_20)
+boxplot(strength~treatment,col="light blue",xlab="Brand",ylab="color change")
+```
+
+We notice that OBP-dry has an outlier and does not follow normal distribution as well as it is right skewed. The OBP-moist and SBP-moist has approximately normal distribution since the median (center line) is at the centre. Furthermore, treatments SBP-dry is left skewed. 
+
+
+b) Carry out an appropriate analysis of variance and state your conclusions (use a significance level of .01 for any tests). Include any graphs that provide insight.
+
+Let A be a factor of two different adhesives(OBP and SBP) and B be a factor of surface condition (dry and moist).
+
+$$H_{0A}: \alpha_{i}=0 \quad  \forall i=1,2, \quad H_{aA}: \exists \alpha_{i}\neq 0$$
+$$H_{0B}: \beta_{j}=0 \quad  \forall j=1,2, \quad H_{aB}: \exists \beta_{j}\neq 0$$
+$$H_{0AB}: \gamma_{ij}=0 \quad  \forall i,j, \quad H_{aAB}: \exists \gamma_{jj}\neq 0$$
+```{r}
+exp11_20$cond = as.factor(c(rep("dry",12), rep("moist",12),rep("dry",12),rep("moist",12)))
+exp11_20$adher= as.factor(c(rep("SBP",24), rep("OBP",24)))
+
+fit <- aov(strength~adher*cond,data=`exp11_20`)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+anova(fit)
+```
+
+The assumption of being iid hold because we do not see any patter in the first plot. It is also normally distributed. 
+
+For A factor, $p$ value which is almost equal to zero is less than 0.01 so we reject the null hypothesis $H_{0A}$. For B factor, $p$ value =0.28786 is bigger than 0.01 so we cannot reject the null hypothesis $H_{0B}$. For interaction between A and B, $p$ value 0.03058  is bigger than 0.01 so we do not reject the null hypothesis $H_{0AB}$. 
+
+```{r}
+par(mfrow=c(1,1))  # interaction plot
+with(exp11_20, (interaction.plot(adher, cond, strength, type = "b", pch = c(18,24), leg.bty = "n", main = "Interaction Plot of adhesive with Condition", 
+                                   xlab = "adhesive",ylab = "stength")))
+```
+
+
+```{r}
+par(mfrow=c(1,2))  # boxplot to view difference in means
+boxplot(strength~adher,data=exp11_20,col="light blue",xlab="adhesive",ylab="strength")
+boxplot(strength~cond,data=exp11_20,col="light blue",xlab="condition",ylab="strength")
+
+```
+```{r}
+# T-test for adhesive
+with(exp11_20, t.test(strength[1:24],strength[25:48],alternative="two.sided",mu=0,paired=T, conf.level=0.99))
+
+# T-test for surface condition
+with(exp11_20, t.test(strength[c(1:12,25:36)],strength[c(13:24,37:48)],alternative="two.sided",mu=0,paired=T, conf.level=0.99))
+
+```
+
+With either box plot or t-test verify our result obtained using ANOVA.
+
+c) If a significance level of .05 is used for the two-way ANOVA, the interaction effect is significant (just as in general different glues work better with some materials than with others). So now it makes sense
+to carry out a one-way ANOVA on the four treatments SBP-D, SBP-M, OBP-D, and OBP-M. Do this, and identify significant differences among the treatments.
+
+The hypothesis
+
+$$H_0: \mu_i=\mu_j, \quad i\neq j$$
+and alternative test
+
+$$H_a: \mbox{at least two of the $\mu_i$ are different}$$
+where $\mu_i$ is true average of four treatments SBP-D, SBP-M, OBP-D, and OBP-M.
+
+```{r}
+f.alpha <- qf(0.05,3,44,lower.tail=F)
+f.alpha
+fit <- aov(strength~as.factor(treatment),data=exp11_20)
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+anova(fit)  # 
+```
+
+We see p value is almost equal to zero which is less than 0.05. And rejection region $(2.816466, \infty)$ includes f value 9.6655. So, we reject the null hypothesis.
+
+```{r}
+par(mfrow=c(1,1))
+boxplot(strength~treatment,col="light blue",xlab="treatment",ylab="strength (lb)")
+
+# multiple comparisons
+TukeyHSD(fit,ordered=T)
+
+detach(exp11_20)
+
+```
+
+We observe that there is a significant difference between SBP moist-OBP-dry and SBP-dry-OBP-dry because p values 0.0008605 and 0.0000634 are less than 0 and both confidence intervals that is shown ANOVA table do not include zero mean.
+
+
+\textbf{Problem 5:} A study was carried out to compare the writing lifetimes
+of four premium brands of pens. It was thought that the writing surface might affect lifetime, so three different surfaces were randomly selected. A writing machine was used to ensure that conditions were otherwise homogeneous (e.g., constant pressure and a fixed angle). The accompanying table shows the two lifetimes (min) obtained for each brand–surface combination. Carry out an appropriate ANOVA, and state your conclusions.
+
+$$H_{0A}: \alpha_{i}=0 \quad  \forall i=1,..,I \quad H_{aA}: \exists \alpha_{i}\neq 0$$
+
+$$H_{0B}: \beta_{j}=0 \quad  \forall j=1,..J \quad H_{aB}: \exists \beta_{j}\neq 0$$
+
+
+$$H_{0AB}: \gamma_{ij}=0 \quad  \forall i,j, \quad H_{aAB}: \exists \gamma_{jj}\neq 0$$
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp11_22 <- read.csv("ex11-22.csv")
+attach(exp11_22)
+```
+```{r}
+fit <- aov(Response~as.factor(Pen)*as.factor(Surface),data=exp11_22)
+anova(fit)
+
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+
+par(mfrow=c(1,2))  # boxplot to view difference in means
+boxplot(Response~Pen,data=exp11_22,col="light blue",xlab="pen",ylab="response")
+boxplot(Response~Surface,data=exp11_22,col="light blue",xlab="surface",ylab="response")
+
+TukeyHSD(fit,ordered=T)
+
+detach(exp11_22)
+```
+
+We see that all p values 0.5835 for $\alpha$, 0.1641 for $\beta$, 0.1492 for $\gamma$ are bigger than 0.05. So, we cannot reject the null hypothesis all those respective parameter. 
+
+```{r}
+f.alpha <- qf(0.95,3,12)
+f.alpha
+f.beta <- qf(0.95,2,12)
+f.beta
+f.gamma <- qf(0.95,6,12)
+f.gamma
+```
+
+Rejection area for $\alpha$ $(3.490295,\infty)$ does not include 0.6755, $\beta$ $(3.885294,\infty)$ does not include 2.1091, $\gamma$ $(2.99612,\infty)$ does not include 1.9718. From here, we also conclude that we caanot reject null hypothesis for $\alpha, \beta, \gamma$. Another verification method is to plot a boxplot or use Tukey. From the above result obtained by using two indicated methods also represents the same result, i.e all p values are greater than 0.05 and confidence intervals does include zero mean so we have to accept null hypothesis.
+
+\textbf{Problem 6:} Factorial designs have been used in forestry to assess the
+effects of various factors on the growth behavior of trees. In one such experiment, researchers thought that healthy spruce seedlings should bud sooner than diseased spruce seedlings (“Practical Analysis of Factorial Experiments
+in Forestry,” Canadian J. of Forestry, 1995: 446–461). In addition, before planting, seedlings were also exposed to three levels of pH to see whether this factor has an effect on virus uptake into the root system. The following table
+shows data from a $2\times 3$  experiment to study both factors.  The response variable is an average rating of five buds from a seedling. The ratings are 0 (bud not broken), 1 (bud partially expanded), and 2 (bud fully expanded). Analyze this data.
+
+
+$$H_{0A}: \alpha_{i}=0 \quad  \forall i=1,..,I \quad H_{aA}: \exists \alpha_{i}\neq 0$$
+
+$$H_{0B}: \beta_{j}=0 \quad  \forall j=1,..J \quad H_{aB}: \exists \beta_{j}\neq 0$$
+
+
+$$H_{0AB}: \gamma_{ij}=0 \quad  \forall i,j, \quad H_{aAB}: \exists \gamma_{jj}\neq 0$$
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK10. ANOVA/hw10")
+exp11_56 <- read.csv("ex11-56.csv")
+attach(exp11_56)
+
+fit <- aov(Response~as.factor(pH)*as.factor(Health),data=exp11_56)
+anova(fit)
+
+par(mfrow=c(1,2))
+plot(fit,1:2,pch=19)  # residual diagnostics
+
+par(mfrow=c(1,1))  # interaction plot
+with(exp11_56, (interaction.plot(pH, Health, Response, type = "b", pch = c(18,24), leg.bty = "n", main = "Interaction Plot of pH with Health", 
+                                   xlab = "pH",ylab = "Response")))
+
+
+par(mfrow=c(1,2))  # boxplot to view difference in means
+boxplot(Response~pH,data=exp11_56,col="light blue",xlab="ph",ylab="response")
+boxplot(Response~Health,data=exp11_56,col="light blue",xlab="health",ylab="response")
+
+TukeyHSD(fit,ordered=T)
+
+
+
+detach(exp11_56)
+```
+
+FRom ANOVA table, p values for both $\alpha$ and $\beta$ is almost zero and less than 0.05. We have to reject $H_{0A}$ and $H_{0B}$. However, for $\gamma$ 0.06872 is greater than 0.05. We cannot reject $H_{0AB}$. 
+
+
+```{r}
+f.alpha <- qf(0.95,1,24)
+f.alpha
+f.beta <- qf(0.95,2,24)
+f.beta
+f.gamma <- qf(0.95,2,24)
+f.gamma
+```
+
+From here, we see that  rejection area for $\alpha$ $(4.259677,\infty)$ does include 15.250, $\beta$ $(3.402826,\infty)$ does include  27.562, $\gamma$ $(3.402826,\infty)$ does not include  3.000. So, we reject first two cases and accept the last one. The same result obtained with p value. We also observe this result by looking at comparison bx plot. The last method tk verify our result is thr Tukey analyis shown above. 

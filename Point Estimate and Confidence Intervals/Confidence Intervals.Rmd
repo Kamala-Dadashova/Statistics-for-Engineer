@@ -1,0 +1,173 @@
+---
+title: "hw7"
+author: "Kamala Dadashova"
+date: "3/4/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+ $\textbf{Problem 4:}$ The mileage data sample from Example 7.6 in Devore is contained in a comma separated
+value file called mileage.csv. Use this data to do the following in R:
+
+
+ 
+(a)  Make a Q-Q plot of the data in the sample. Based on your observations, can we assume this data came from a normal distribution?
+
+```{r qqplot}
+
+mileages <- read.csv("~/Desktop/Statistics Learn/ST515-2022/WEEK7/Confidence Intervals-20220301/HW7/mileage.csv")
+mile = mileages$mileage
+n = length(mile)
+qqnorm(mile, pch=19)
+qqline(mile, lwd=2, col="blue")
+```
+
+As we observed, data has a normal distribution. 
+
+(b) Calculate a large sample approximate confidence interval for the mean and an exact confidence interval for the mean based on the assumption the data is normally distributed. Compare the results. What does this say about your conclusion in (a). ?
+```{r confidence}
+# Large sample approximation.
+approx <- c(mean(mile)-1.96*sd(mile)/sqrt(n),mean(mile)+1.96*sd(mile)/sqrt(n))
+names(approx) = c("lower","upper")
+approx
+
+#Exact.
+t.crit <- qt(0.025,n-1,lower.tail=F)
+exact <- c(mean(mile)-t.crit*sd(mile)/sqrt(n),mean(mile)+t.crit*sd(mile)/sqrt(n))  
+names(exact) = c("lower","upper")
+exact
+```
+In terms of comparison, we observe that the there is a small difference in lower bounds and in upper bounds for both large and exact sample approximation implying that our assumption in part (a) about normal distribution holds true. 
+
+
+
+
+
+(c) Generate a bootstrap percentile confidence interval for the mean from the sample
+data.
+
+```{r bootstrap}
+
+B <- 10000  # run 10000 bootstrap samples
+means <- rep(0,B)  # create dummy matric for means
+for(i in 1:B){
+  rsample <- sample(mile,n,replace=T) 
+  means[i] <- mean(rsample)  # calculate mean and save in vector
+}
+x_bar_bar <- mean(means)  # calculate mean estimate
+
+
+# t-CI with bootstrap SE
+tboot <- c(mean(mile)-qt(0.025,n-1,lower.tail=F)*sd(means),
+           mean(mile)+qt(0.025,n-1,lower.tail=F)*sd(means))
+names(tboot) = c("lower", "upper")
+tboot
+
+# bootstrap percentile confidence interval
+pctile <- quantile(means,probs=c(0.025,0.975))
+pctile
+```
+
+
+
+
+(d) Which interval is most appropriate for this data? Justify your answer.
+
+```{r}
+# plot and compare
+par(mfrow=c(1,1))
+hist(means,breaks=20,col="light blue")  #histogram of means
+abline(v=exact,lty=1)   # overlay exact interval
+abline(v=tboot,lty=2)   # overlay t-bootstrap interval
+abline(v=pctile,lty=3)  # overlay percentile interval
+abline(v=approx,lty=5)  # overlay percentile interval
+legend("topleft",legend=c("exact","tboot","pctile",'approx.'),lty=c(1,2,3,5),bty="n")
+
+```
+
+ As we observe from histogram, tboot gives the best approximation to exact value.
+ 
+
+ $\textbf{Problem 5:}$ Data from a sample of maximum pressures on concrete framework is contained in the file
+pressure.csv. Use this data to do the following in R:
+
+
+
+(a) Make Q-Q plot of the data in the sample. Based on your observations, can we assume this data came from a normal distribution?
+```{r}
+pressure <- read.csv("~/Desktop/Statistics Learn/ST515-2022/WEEK7/Confidence Intervals-20220301/HW7/pressure.csv")
+pressure = pressure[,1]
+n = length(pressure)
+qqnorm(pressure, pch=19)
+qqline(pressure, lwd=2, col="blue")
+```
+ 
+ As we observe, the data is normally distributed.
+
+
+(b) Calculate an exact confidence interval for both the mean and the standard deviation based on the assumption the data is normally distributed.
+
+```{r}
+#Exact.
+t.crit <- qt(0.025,n-1,lower.tail=F)
+exact <- c(mean(pressure)-t.crit*sd(pressure)/sqrt(n),mean(pressure)+t.crit*sd(pressure)/sqrt(n))  
+names(exact) = c("lower","upper")
+exact
+
+X2l.crit <- qchisq(0.025,n-1,lower.tail=T)
+X2u.crit <- qchisq(0.975,n-1,lower.tail=T)
+sd_interval <- c(sqrt((n-1)*var(pressure)/X2u.crit),sqrt((n-1)*var(pressure)/X2l.crit))
+names(sd_interval)<-c("lower", "upper")
+sd_interval
+```
+
+
+(c) Generate a bootstrap percentile confidence interval for the mean and the standard deviation from the sample data.
+
+```{r}
+
+B <- 10000  # run 10000 bootstrap samples
+means <- rep(0,B)  # create dummy matric for means
+for(i in 1:B){
+  rsample <- sample(pressure,n,replace=T) 
+  means[i] <- mean(rsample)  # calculate mean and save in vector
+}
+x_bar_bar <- mean(means)  # calculate mean estimate
+se_est <- sd(means) #standard error estimates
+se_est
+# t-CI with bootstrap SE
+tboot <- c(mean(pressure)-qt(0.025,n-1,lower.tail=F)*sd(means),
+           mean(pressure)+qt(0.025,n-1,lower.tail=F)*sd(means))
+names(tboot) = c("lower", "upper")
+tboot
+
+# bootstrap percentile confidence interval
+pctile <- quantile(means,probs=c(0.025,0.975))
+pctile
+```
+
+
+
+
+(d) Which intervals are most appropriate for this data? Justify your answer
+ 
+ 
+```{r}
+# plot and compare
+par(mfrow=c(1,1))
+hist(means,breaks=20,col="light blue")  #histogram of means
+abline(v=exact,lty=1)   # overlay exact interval
+abline(v=tboot,lty=2)   # overlay t-bootstrap interval
+abline(v=pctile,lty=3)  # overlay percentile interval
+legend("topleft",legend=c("exact","tboot","pctile"),lty=c(1,2,3),bty="n")
+
+```
+ 
+ As we observe from histogram, tboot gives the best approximation to exact value.
+ 
+ 
+ 

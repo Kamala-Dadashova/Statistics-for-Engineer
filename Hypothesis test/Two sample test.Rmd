@@ -1,0 +1,271 @@
+---
+title: "HW9"
+author: "Kamala Dadashova"
+date: "3/27/2022"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+\textbf{Problem 1:} 
+
+a) Construct normal probability plots to verify the plausibility
+of both samples having been selected from
+normal population distributions.
+
+
+```{r}
+setwd("~/Documents/CLASSES/Classes PhD/8. Statistics for Engineer/WEEK9. Two sample hypothesis test/hw9")
+ex23 <- read.csv("ex9-23.csv")
+attach(ex23)
+par(mfrow=c(1,2))     
+H<- Extensibility..[1:24] 
+P<- Extensibility..[25:32] 
+# check for normality
+qqnorm(H)
+qqline(H)
+qqnorm(P)
+qqline(P)
+
+```
+
+We observe that both plots shows sufficient linearity.
+Thus, it is plausible to say that both samples have been selected from normal population distributions.
+
+b) Construct a comparative boxplot. Does it suggest
+that there is a difference between true average
+extensibility for high-quality fabric specimens and
+that for poor-quality specimens?
+```{r}
+boxplot(Extensibility..[1:24], Extensibility..[25:32],horizontal=TRUE,
+        names=c("High- quality","Poor-quality"),xlab="extensibility",main="Comparative Box Plot for High Quality and Poor Quality Fabric")
+```
+
+The comparative boxplot does not give a difference between average extensibility for the two types of fabrics.
+
+c) The sample mean and standard deviation for the highquality sample are 1.508 and .444, respectively, and those for the poor-quality sample are 1.588 and .530. Use the two-sample t test to decide whether true average extensibility differs for the two types of fabric.
+
+We state our null and alternative hypothesis as follow
+$H_0: \mu_1-\mu_2=0$ 
+$H_a: \mu_1-\mu_2\neq 0$
+
+We are given $\bar{x_1}=1.508$, $\bar{x_2}=1.588$, $s_1=0.444$, $s_2=0.530$.
+Note that two samples are independent with $n_1=24$ and $n_2=8$. We also do not know the variances of the underlying distributions of the samples. Note also that we have 32 samples together which indicates that both are less than 40.
+```{r}
+n1 <- 24
+n2 <- 8
+s1 <- 0.444
+s2 <-0.530
+delta <- 1.508-1.5888 #sample mean difference
+delta
+a1<-s1^2/n1
+a2<-s2^2/n2
+sd<-sqrt(a1+a2)
+sd
+df<-(a1+a2)^2/((a1^2/(n1-1))+(a2^2/(n2-1)))
+df
+t=delta/sd #test statistics
+t
+alpha=0.05
+#p-test
+p.value <- pt(t,df)+pt(-t,df,lower.tail=F) 
+p.value
+#rejection area
+t.alpha <- c(qt(0.025,df),qt(0.975,df)) 
+t.alpha
+#confidence interval
+ci <-delta+t.alpha*sd
+ci
+detach(ex23)
+```
+Since ($p=0.7056482>\alpha=0.005$), rejection area $(-\infty, -2.214287)\cup (2.214287,\infty)$ does not include t statistics $-0.3881813$,  and confidence interval$[-0.5417042, 0.3801042]$ does include mean difference which is zero, we accept $H_0$. Thus, there is insufficient evidence to claim that the true average extensibility differs for the two types of fabrics.
+
+
+\textbf{Problem 2:} J.Devore. Problem 26.
+
+We use SAS output. Since $N=20<40,$ we use t statistics test.
+$H_0: \mu_1-\mu_2=0$, $H_a: \mu_1-\mu_2>0$
+```{r}
+t=3.6362
+df=38
+alpha=0.01
+p.value <- pt(t,df,lower.tail=F) 
+p.value
+```
+Since p value is less than 0.01 so we reject null hypothesis. According to this result, we might commit type I error. 
+
+\textbf{Problem 3:} 
+
+a) Does the data suggest that true average total body bone mineral content during postweaning exceeds that during lactation by more than 25 g? State and
+test the appropriate hypotheses using a significance level of .05. [Note: The appropriate normal probability plot shows some curvature but not enough to cast substantial doubt on a normality assumption.]
+
+
+
+```{r}
+setwd("~/Documents/CLASSES/Classes PhD/8. Statistics for Engineer/WEEK9. Two sample hypothesis test/hw9")
+ex40 <- read.csv("ex9-40.csv")
+attach(ex40)
+par(mfrow=c(1,2))     
+L<- TBBMC[1:10] 
+P<- TBBMC[11:20] 
+# check for normality
+qqnorm(L)
+qqline(L)
+qqnorm(P)
+qqline(P)
+```
+
+As we see from plot, data is almost normally distributed. Let us state
+$H_0: \mu_1-\mu_2\geq 25$ and $H_a: \mu_1-\mu_2<25$. Note that $n_1=n_2=n=10$
+```{r}
+delta <-TBBMC[11:20]-TBBMC[1:10]
+x.bar <- mean(delta)   # calculate sample statistics
+x.bar
+s<-sd(delta)
+s
+t <- (x.bar-25)*sqrt(10)/s 
+t
+alpha=0.05
+#p-test
+p.value <-pt(t,10-1,lower.tail = FALSE) 
+p.value
+#rejection area
+t.alpha <- c(qt(0.95,10-1))
+t.alpha
+#confidence interval
+ci <- x.bar+t.alpha*s/sqrt(10) 
+ci
+t.test(TBBMC[1:10],TBBMC[11:20],alternative="less",mu=25,paired=T, conf.level=0.95)
+```
+We reject null hypothesis since $p=0.001602748<\alpha=0.05$, rejection interval $(-\infty,-1.833113)$does include test statistics $-3.980063$ , confidence interval $(-\infty, -45.50299)$ does not contain mean 25. 
+
+b) Calculate an upper confidence bound using a $95\%$ confidence level for the true average difference between TBBMC during post weaning and during lactation.
+
+We did this in part (a). 
+
+c) Does the (incorrect) use of the two-sample t test to test the hypotheses suggested in (a) lead to the same conclusion that you obtained there? Explain.
+
+```{r}
+n1 <- 10
+n2 <- 10
+s1 <- sd(TBBMC[1:10])
+s2 <-sd(TBBMC[11:20])
+a1<-s1^2/n1
+a2<-s2^2/n2
+sd<-sqrt(a1+a2)
+sd
+df<-(a1+a2)^2/((a1^2/(n1-1))+(a2^2/(n2-1)))
+df
+t=(x.bar-25)/sd #test statistics
+t
+alpha=0.05
+#p-test
+p.value <-pt(t,df,lower.tail = FALSE)  
+p.value
+#rejection area
+t.alpha <- c(qt(0.95,df)) 
+t.alpha
+#confidence interval
+ci <-x.bar+t.alpha*sd
+ci
+detach(ex40)
+```
+Here, $p=0.281634>\alpha=0.05$, rejection area $(-\infty, -1.734115)$ does not include t statistic value $-0.588723$, confidence interval $(-\infty, 205.645)$ does include mean 25, so if we mistakenly do this hypothesis with above method then our result would be accepting null hypothesis.
+
+\textbf{Problem 4:} Calculate and interpret an upper confidence bound for the
+true average difference between 1 minute modulus and 4 week modulus; first check the plausibility of any necessary assumptions.
+
+
+```{r}
+setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK9. Two sample hypothesis test/hw9")
+ex46 <- read.csv("ex9-46.csv")
+attach(ex46)
+par(mfrow=c(1,2))     
+onemin<- elasticity[1:16] 
+fourmin<- elasticity[17:32] 
+# check for normality
+qqnorm(onemin)
+qqline(onemin)
+qqnorm(fourmin)
+qqline(fourmin)
+```
+
+As we see, both graphs representing a normal distribution. Next, we introduce
+$H_0: \mu_2-\mu_1 =0$ and $H_a: \mu_2-\mu_1\neq 0$. We have two dependent samples with $n=n_1=n_2=16$. So, we will use the following
+
+```{r}
+delta <-elasticity[1:16]-elasticity[17:32] 
+x.bar <- mean(delta)   # calculate sample statistics
+x.bar
+s<-sd(delta)
+s
+t <- (x.bar)*sqrt(16) /s
+t
+alpha=0.05
+p.value <- pt(-t,16-1)+pt(t,16-1,lower.tail=F)   # p-value (two sided)
+p.value
+t.alpha <- c(qt(0.025,16-1),qt(0.975,16-1)) # rejection region (two sided)
+t.alpha
+ci <- x.bar+t.alpha*s/sqrt(16) # confidence interval (two sided)
+ci
+```
+Thus, the upper confidence bound for the true average difference bewteen 1 minute and 4 weeks modulus is $2906.663$. Also, note that since p values is less than 0.05, rejection area does $(-\infty, -2.13145) \cup (2.13145, \infty )$ does include $t=20.72664$, and $CI=[ 2364.587, 2906.663]$ does not include mean zero, we reject null hypothesis.
+
+\textbf{Problem 5:} Recent incidents of food contamination have caused great
+concern among consumers. The article “How Safe Is That chicken?” (Consumer Reports, Jan. 2010: 19–23) reported that 35 of 80 randomly selected Perdue brand broilers tested positively for either campylobacter or salmonella (or
+both), the leading bacterial causes of food-borne disease, whereas 66 of 80 Tyson brand broilers tested positive.
+
+a) Does it appear that the true proportion of noncontaminated Perdue broilers differs from that for the Tyson brand? Carry out a test of hypotheses using a
+significance level .01.
+
+Hypotheses are:
+$H_0: p_1-p_2=0$ and $H_1: p_1-p_2\neq 0$.
+Let $p_1$ be the proportion of non-contaminated Perdue broilers and $p_2$
+be the proportion of non-contaminated Tyson broilers.
+
+```{r}
+p1.hat<-45/80
+p2.hat<-14/80
+n1<-80
+n2<-80
+p.hat <- (45+14)/(80+80)
+p.hat
+z <- (p1.hat-p2.hat)/sqrt(p.hat*(1-p.hat)*(1/80+1/80))  # test statistic
+z
+p.value=pnorm(-z)+pnorm(z,lower.tail=F)    # p-value
+p.value
+z.alpha <- qnorm(c(0.005,0.995))    # rejection region
+z.alpha
+ci <- (p1.hat-p2.hat)+z.alpha*sqrt(p.hat*(1-p.hat)*(1/80+1/80)) 
+ci
+```
+```{r}
+tab <- matrix(0,2,2)   # create table with rows = aspirin, no aspirin, columns = lived, died
+tab[1,] <- c(45,80-45)
+tab[2,] <- c(14,80-14)
+tab
+prop.test(tab,alternative="two.sided",conf.level=0.99,correct=F)  
+```
+Since $p=3.781029e-07<\alpha=0.01$, rejection area $(-\infty,-2.575829)\cup ( 2.575829,\infty)$ does include $z=5.079664$, $CI=[0.191004,0.583996]$ does not include difference of proportion value zero, we reject null hypothesis. So, there is a difference.
+
+
+
+b) If the true proportions of non-contaminated chickens for the Perdue and Tyson brands are .50 and .25, respectively, how likely is it that the null hypothesis of equal proportions will be rejected when a .01 significance level is used and the sample sizes are both 80? 
+
+We have $p_1=0.5, p_2=0.25$. 
+
+```{r}
+p1=0.5
+p2=0.25
+n=80
+sd=sqrt((p1*(1-p1)/n)+(p2*(1-p2)/n))
+p.bar=(n*p1+n*p2)/(n+n)
+p.bar
+q.bar=1-p.bar
+z.alpha=-qnorm(0.01/2)
+selected.term=z.alpha*sqrt(p.bar*q.bar*((1/80)+(1/80)));
+beta=pnorm((selected.term-(p1-p2))/sd)-pnorm((-selected.term-(p1-p2))/sd)
+beta
+(1-beta)*100
+```
+Thus, there is a $76.25\%$ chance that the null hypothesis of equal proportions will be rejected at a 0.01 significance level.
