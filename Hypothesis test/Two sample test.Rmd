@@ -15,7 +15,6 @@ normal population distributions.
 
 
 ```{r}
-setwd("~/Documents/CLASSES/Classes PhD/8. Statistics for Engineer/WEEK9. Two sample hypothesis test/hw9")
 ex23 <- read.csv("ex9-23.csv")
 attach(ex23)
 par(mfrow=c(1,2))     
@@ -102,7 +101,6 @@ test the appropriate hypotheses using a significance level of .05. [Note: The ap
 
 
 ```{r}
-setwd("~/Documents/CLASSES/Classes PhD/8. Statistics for Engineer/WEEK9. Two sample hypothesis test/hw9")
 ex40 <- read.csv("ex9-40.csv")
 attach(ex40)
 par(mfrow=c(1,2))     
@@ -177,7 +175,6 @@ true average difference between 1 minute modulus and 4 week modulus; first check
 
 
 ```{r}
-setwd("~/Documents/CLASSES/Statistics Learn/ST515-2022/WEEK9. Two sample hypothesis test/hw9")
 ex46 <- read.csv("ex9-46.csv")
 attach(ex46)
 par(mfrow=c(1,2))     
